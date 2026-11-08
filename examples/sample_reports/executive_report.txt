@@ -1,0 +1,36 @@
+================================================================================
+                    SYSTEMSCAN EXECUTIVE SECURITY SUMMARY
+================================================================================
+Report ID:      rep-sample-001
+Scan Date:      2026-11-08 18:00:00 UTC
+Target Host:    [REDACTED_HOSTNAME] (Ubuntu 24.04 LTS / 6.8.0-generic)
+Overall Status: REVIEW REQUIRED (Action Recommended)
+--------------------------------------------------------------------------------
+
+1. EXECUTIVE OVERVIEW
+---------------------
+During this scheduled assessment, SystemScan performed full-stack inspection across
+hardware metrics, active services, network listening ports, filesystem structures,
+and malware threat signatures.
+
+Total Findings:        18
+  • Critical:           0
+  • High Priority:      1
+  • Medium Priority:    2
+  • Low Priority:       5
+  • Informational:     10
+
+2. KEY TAKEAWAYS & ACTION ITEMS
+-------------------------------
+[!] High Priority: Port 8080 is listening globally on 0.0.0.0 without encryption.
+    Recommended Action: Bind process (PID: 1420) to loopback (127.0.0.1) or deploy
+    an HTTPS reverse proxy with valid TLS certificate.
+
+[i] Storage Optimization: 4.2 GB of reclaimable browser and temporary cache files
+    were identified. Run 'systemscan cleanup' to preview and safely reclaim storage.
+
+--------------------------------------------------------------------------------
+Notice: The absence of critical findings does not constitute a legal guarantee
+of absolute host security.
+================================================================================
+

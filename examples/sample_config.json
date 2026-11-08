@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "preferences": {
+    "debug": false,
+    "verbose": true,
+    "color_output": true,
+    "interactive_banner": true
+  },
+  "log_level": "INFO",
+  "custom_report_dir": null,
+  "scanner": {
+    "worker_count": 8,
+    "max_file_size_mb": 250,
+    "timeout_seconds": 600,
+    "removable_device_policy": "prompt",
+    "exclusions": [
+      "/proc",
+      "/sys",
+      "/dev",
+      "C:\\$Recycle.Bin",
+      "C:\\System Volume Information",
+      ".git",
+      "node_modules",
+      "__pycache__"
+    ]
+  },
+  "update": {
+    "channel": "stable",
+    "update_source": "https://api.github.com/repos/Shadab-2604/sscli/releases",
+    "auto_check": false
+  },
+  "modules": {}
+}

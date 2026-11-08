@@ -1,0 +1,63 @@
+{
+  "report_id": "rep-sample-001",
+  "schema_version": "1.0",
+  "created_at": "2026-11-08T18:00:00Z",
+  "scan_id": "scan-sample-001",
+  "scan_type": "full",
+  "status": "completed",
+  "executive_summary": {
+    "overall_health": "REVIEW_REQUIRED",
+    "critical_findings_count": 0,
+    "high_findings_count": 1,
+    "medium_findings_count": 2,
+    "low_findings_count": 5,
+    "info_findings_count": 10,
+    "total_findings_count": 18,
+    "action_required": true,
+    "key_takeaways": [
+      "No critical zero-day threats or active malware observed.",
+      "One high-priority service configuration issue detected: unencrypted plaintext telemetry port exposed.",
+      "Temporary cache storage contains 4.2 GB of reclaimable browser and package manager cache."
+    ]
+  },
+  "findings": [
+    {
+      "finding_id": "fnd-net-01",
+      "category": "network",
+      "severity": "HIGH",
+      "confidence": "CONFIRMED",
+      "title": "Plaintext Listening Service Exposed on All Interfaces",
+      "description": "Port 8080 is listening on 0.0.0.0 without TLS encryption.",
+      "target": "0.0.0.0:8080",
+      "remediation": "Bind the service to 127.0.0.1 or configure TLS termination.",
+      "metadata": {
+        "pid": 1420,
+        "process_name": "legacy_service",
+        "proto": "tcp"
+      }
+    },
+    {
+      "finding_id": "fnd-stor-01",
+      "category": "storage",
+      "severity": "LOW",
+      "confidence": "HIGH",
+      "title": "Reclaimable Web Browser Cache",
+      "description": "Browser cache exceeds configured size threshold of 2.0 GB.",
+      "target": "/home/user/.cache/google-chrome",
+      "remediation": "Execute 'systemscan cleanup' to safely purge cache files.",
+      "metadata": {
+        "reclaimable_bytes": 4500000000
+      }
+    }
+  ],
+  "system_summary": {
+    "os_name": "Linux",
+    "os_version": "Ubuntu 24.04 LTS",
+    "kernel_version": "6.8.0-generic",
+    "cpu_model": "AMD Ryzen 7 7840HS",
+    "cpu_cores": 16,
+    "ram_total_gb": 31.2,
+    "hostname_redacted": true
+  }
+}
+

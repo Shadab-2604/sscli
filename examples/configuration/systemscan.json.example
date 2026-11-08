@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "log_level": "INFO",
+  "log_file_enabled": true,
+  "max_log_size_mb": 5,
+  "log_backup_count": 5,
+  "interactive_menu": true,
+  "enable_banner": true,
+  "redact_hardware_serials": true,
+  "redact_sensitive_paths": true,
+  "performance": {
+    "concurrency_mode": "adaptive",
+    "max_workers": 4,
+    "cpu_throttle_percent": 85.0,
+    "memory_throttle_percent": 75.0,
+    "battery_saver_enabled": true
+  },
+  "scan": {
+    "default_roots": [],
+    "max_depth": null,
+    "include_hidden": true,
+    "follow_symlinks": false,
+    "hash_algorithm": "sha256",
+    "max_file_size_mb": 500,
+    "chunk_size_kb": 64,
+    "exclude_extensions": [
+      ".tmp",
+      ".swp",
+      ".bak"
+    ],
+    "exclude_directories": [
+      ".git",
+      ".svn",
+      "node_modules",
+      "__pycache__",
+      ".venv"
+    ]
+  },
+  "malware": {
+    "enable_heuristics": true,
+    "entropy_threshold": 7.5,
+    "enable_pe_analysis": true,
+    "max_scan_size_mb": 250,
+    "quarantine_directory": null,
+    "auto_quarantine": false
+  },
+  "network": {
+    "default_timeout_seconds": 2.0,
+    "max_cidr_hosts": 256,
+    "allow_public_ip_scans": false,
+    "enable_dns_diagnostics": true,
+    "enable_wifi_audit": true
+  },
+  "reporting": {
+    "default_format": "json",
+    "enable_redaction": true,
+    "retention_days": 90,
+    "generate_checksum_manifest": true
+  },
+  "updates": {
+    "channel": "stable",
+    "auto_check": false,
+    "auto_install": false,
+    "verify_signatures": false,
+    "check_interval_hours": 24,
+    "max_backups": 3,
+    "prefer_lockfile": true,
+    "index_url": null
+  }
+}
+

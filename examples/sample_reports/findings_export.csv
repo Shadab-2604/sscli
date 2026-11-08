@@ -1,0 +1,5 @@
+finding_id,category,severity,confidence,title,target,remediation
+fnd-net-01,network,HIGH,CONFIRMED,"Plaintext Listening Service Exposed on All Interfaces",0.0.0.0:8080,"Bind service to 127.0.0.1 or configure TLS termination."
+fnd-stor-01,storage,LOW,HIGH,"Reclaimable Web Browser Cache",/home/user/.cache/google-chrome,"Execute 'systemscan cleanup' to safely purge cache files."
+fnd-sec-02,system,MEDIUM,HIGH,"Unattended Boot Persistence Registry Entry",HKCU\Software\Microsoft\Windows\CurrentVersion\Run,"Inspect startup binary signature and remove obsolete entries."
+

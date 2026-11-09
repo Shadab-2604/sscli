@@ -245,6 +245,12 @@ systemscan monitor --interval 1.0
 systemscan network sockets --format text
 systemscan network firewall
 
+# Dual-Mode Passive Network Threat & Port Scan Monitor:
+systemscan network-monitor
+systemscan network-monitor status
+systemscan network-monitor diagnostics
+systemscan network-monitor alerts --limit 20
+
 # Scan Directory for Malware Indicators:
 systemscan malware scan ~/Downloads
 
@@ -428,9 +434,9 @@ python scripts/run_checks.py
 This executes Ruff linting, Ruff formatting verification, Mypy strict type checking, and Pytest with code coverage reporting.
 
 ### Current Test Suite Metrics:
-- **Total Tests:** 249 passing automated tests.
+- **Total Tests:** 289 passing automated tests.
 - **Failures:** 0.
-- **Line Coverage:** >71% across the entire codebase.
+- **Line Coverage:** >72% across the entire codebase.
 
 ---
 
@@ -462,6 +468,13 @@ Or execute platform scripts:
 - [x] **Phase 06:** Storage Analyzer, Cache Scanner & Safe Cleanup
 - [x] **Phase 07:** Network Security Audit & Intelligence Engine
 - [x] **Phase 08:** Scan Intelligence, Concurrency & Checkpoints
+- [x] **Phase 09:** Reporting Engine, Audit Trails & Integrity Verification
+- [x] **Phase 10:** Safe Self-Update System & Rollback Verification
+- [x] **Phase 11:** Environment Health, Self-Diagnosis & Doctor
+- [x] **Phase 12:** Production Documentation, Distribution & Packaging
+- [x] **Phase 13:** Final Integration & E2E Verification
+- [x] **Phase 14:** Global CLI Experience & Professional Interactive Terminal
+- [x] **Phase 15:** Dual-Mode Network Threat Monitor (Passive Local & Network-Wide Nmap / Port Reconnaissance Detection)
 - [x] **Phase 09:** Centralized Multi-Format Reporting & Manifests
 - [x] **Phase 10:** Dependency Governance & 10-Stage Self-Updates
 - [x] **Phase 11:** Production QA, Security Audit & Hardening

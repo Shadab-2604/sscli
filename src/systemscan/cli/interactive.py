@@ -96,7 +96,7 @@ def render_cli_welcome() -> None:
         ("4", "Custom Path Scan"),
         ("5", "Malware Detection"),
         ("6", "Storage Analyzer"),
-        ("7", "Network Security Audit"),
+        ("7", "Network Security Audit & Threat Monitor"),
         ("8", "USB / External Device Scanner & Repair"),
         ("9", "Scan History"),
         ("10", "Reports & Export"),
@@ -555,6 +555,33 @@ def action_network_audit() -> None:
                 f"{c.pid} ({c.process_name})" if c.pid else "System",
             )
         console.print(s_tbl)
+    except Exception:
+        pass
+
+    # Quick prompt for Network Threat Monitor
+    console.print("\n[bold cyan][NETWORK THREAT MONITOR TOOLKIT][/bold cyan]")
+    console.print("  [bold cyan]1.[/bold cyan] Launch Live Dual-Mode Network Threat Monitor (systemscan network-monitor)")
+    console.print("  [bold cyan]2.[/bold cyan] View Sensor Operational Status & Coverage")
+    console.print("  [bold cyan]3.[/bold cyan] Run Capture Diagnostics (Driver & Permissions)")
+    console.print("  [bold cyan]4.[/bold cyan] View Detected Network Threat Alerts")
+    console.print("  [bold cyan]0.[/bold cyan] Return to Main Menu")
+
+    try:
+        sub_ch = Prompt.ask("\nSelect action", default="0").strip()
+        if sub_ch == "1":
+            from systemscan.cli.commands.network_monitor import run_live_monitor
+            dur = Prompt.ask("Enter monitoring duration in seconds (0 for continuous)", default="15").strip()
+            duration_int = int(dur) if dur.isdigit() and int(dur) > 0 else None
+            run_live_monitor(duration=duration_int)
+        elif sub_ch == "2":
+            from systemscan.cli.commands.network_monitor import status_command
+            status_command()
+        elif sub_ch == "3":
+            from systemscan.cli.commands.network_monitor import diagnostics_command
+            diagnostics_command()
+        elif sub_ch == "4":
+            from systemscan.cli.commands.network_monitor import alerts_command
+            alerts_command()
     except Exception:
         pass
 

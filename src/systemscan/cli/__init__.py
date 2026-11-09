@@ -21,6 +21,7 @@ from systemscan.cli.commands.info import app as info_cmd
 from systemscan.cli.commands.malware import app as malware_cmd
 from systemscan.cli.commands.monitor import app as monitor_cmd
 from systemscan.cli.commands.network import app as network_cmd
+from systemscan.cli.commands.network_monitor import app as network_monitor_cmd
 from systemscan.cli.commands.performance import app as performance_cmd
 from systemscan.cli.commands.processes import app as processes_cmd
 from systemscan.cli.commands.reports import app as reports_cmd
@@ -65,6 +66,8 @@ app.add_typer(storage_cmd, name="storage")
 app.add_typer(cache_cmd, name="cache")
 app.add_typer(cleanup_cmd, name="cleanup")
 app.add_typer(network_cmd, name="network")
+app.add_typer(network_monitor_cmd, name="network-monitor")
+app.add_typer(network_monitor_cmd, name="threat-monitor")
 app.add_typer(history_cmd, name="history")
 app.add_typer(performance_cmd, name="performance")
 app.add_typer(doctor_cmd, name="doctor")

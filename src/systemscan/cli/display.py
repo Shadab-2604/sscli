@@ -816,6 +816,7 @@ def render_malware_scan_summary(summary: MalwareScanSummary) -> None:
             header_style="bold red",
             show_lines=True,
         )
+        f_tbl.add_column("Sr No", justify="right", style="bold cyan", width=6)
         f_tbl.add_column("Severity", justify="center", width=10)
         f_tbl.add_column("Confidence", justify="center", width=12)
         f_tbl.add_column("Category", style="yellow")
@@ -823,20 +824,16 @@ def render_malware_scan_summary(summary: MalwareScanSummary) -> None:
         f_tbl.add_column("File Path", style="dim white")
         f_tbl.add_column("Evidence", style="cyan")
 
-        for f in summary.findings[:25]:
+        for idx, f in enumerate(summary.findings, start=1):
             sev_style = "bold red" if f.severity.value in ("CRITICAL", "HIGH") else "yellow"
             f_tbl.add_row(
+                str(idx),
                 f"[{sev_style}]{f.severity.value}[/{sev_style}]",
                 f.confidence.value,
                 f.category.value,
                 f.threat_name or f.rule_id,
                 f.file_path,
                 f.evidence[:60] + ("..." if len(f.evidence) > 60 else ""),
-            )
-
-        if len(summary.findings) > 25:
-            f_tbl.caption = (
-                f"[dim]Showing first 25 of {len(summary.findings)} total findings.[/dim]"
             )
 
         console.print(f_tbl)

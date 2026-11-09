@@ -214,6 +214,42 @@ def test_action_custom_scan(tmp_path: Path):
     assert "Scan completed in" in output
 
 
+def test_run_compact_live_scan_threat_table_sr_no(tmp_path: Path):
+    """Verify threat table renders 'Sr No' column and lists all detected items."""
+    from systemscan.modules.malware.models import ThreatSeverity
+
+    test_file = tmp_path / "threat_sample.txt"
+    test_file.write_text("suspicious payload")
+
+    buf = io.StringIO()
+    test_console = Console(file=buf, no_color=True, highlight=False)
+
+    fake_verdict = mock.MagicMock()
+    fake_verdict.severity = ThreatSeverity.CRITICAL
+    fake_verdict.threat_name = "Test Trojan"
+    fake_verdict.rule_id = "TEST-001"
+    fake_verdict.evidence = "Found test string"
+
+    with (
+        mock.patch("systemscan.cli.interactive.console", test_console),
+        mock.patch(
+            "systemscan.modules.malware.engine.MalwareDetectionEngine.analyze_file",
+            return_value=[fake_verdict],
+        ),
+    ):
+        run_compact_live_scan(
+            scan_title="Threat Test Scan",
+            roots=[str(tmp_path)],
+            enable_malware=True,
+        )
+
+    output = buf.getvalue()
+    assert "Detected Threats" in output
+    assert "Sr No" in output
+    assert "CRITICAL" in output
+    assert "Test Trojan" in output
+
+
 def test_action_malware_scan(tmp_path: Path):
     """Verify malware scan prompts for path and executes inspection."""
     buf = io.StringIO()

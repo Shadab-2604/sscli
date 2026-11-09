@@ -151,7 +151,16 @@ def run_compact_live_scan(
     findings: list[dict[str, Any]] = []
 
     def make_live_text(is_done: bool = False) -> Text:
+        current_elapsed = time.time() - start_time
+        start_time_str = datetime.fromtimestamp(start_time).strftime("%I:%M:%S %p")
+
         txt = Text()
+        txt.append("  [SCAN] ", style="bold blue")
+        txt.append(f"Start time          : {start_time_str}\n")
+
+        txt.append("  [SCAN] ", style="bold blue")
+        txt.append(f"Elapsed time        : {format_duration(current_elapsed)}\n")
+
         txt.append("  [SCAN] ", style="bold blue")
         txt.append(f"Files scanned       : {files_scanned:,}\n")
 
@@ -160,19 +169,6 @@ def run_compact_live_scan(
 
         txt.append("  [SCAN] ", style="bold blue")
         txt.append(f"Data scanned        : {format_bytes(bytes_scanned)}\n")
-
-        # ETA and progress
-        _, eta_sec, comp_pct = eta_engine.calculate_eta()
-        pct_display = (
-            f"{comp_pct:.0f}%" if comp_pct is not None else f"{min(99, files_scanned % 100)}%"
-        )
-        eta_display = format_duration(eta_sec) if eta_sec is not None else "Calculating..."
-        if is_done:
-            pct_display = "100%"
-            eta_display = "Completed"
-
-        txt.append("  [SCAN] ", style="bold blue")
-        txt.append(f"Progress            : {pct_display} (ETA: {eta_display})\n")
 
         if errors_count > 0:
             txt.append("  [WARN] ", style="bold yellow")
@@ -323,13 +319,14 @@ def run_compact_live_scan(
             console.print(
                 f"[bold red][ALERT][/bold red] Detections: [bold red]{len(findings)} threat(s) detected[/bold red]"
             )
-            # Show top findings
+            # Show all detected findings with serial numbers
             f_table = Table(title="Detected Threats", header_style="bold red", border_style="dim")
+            f_table.add_column("Sr No", style="bold cyan", justify="right", width=6)
             f_table.add_column("Severity", style="bold red")
             f_table.add_column("Rule / Threat", style="yellow")
             f_table.add_column("Path", style="white")
-            for f in findings[:10]:
-                f_table.add_row(f["severity"], f["rule_name"], f["path"])
+            for idx, f in enumerate(findings, start=1):
+                f_table.add_row(str(idx), f["severity"], f["rule_name"], f["path"])
             console.print(f_table)
         else:
             console.print(
@@ -560,7 +557,9 @@ def action_network_audit() -> None:
 
     # Quick prompt for Network Threat Monitor
     console.print("\n[bold cyan][NETWORK THREAT MONITOR TOOLKIT][/bold cyan]")
-    console.print("  [bold cyan]1.[/bold cyan] Launch Live Dual-Mode Network Threat Monitor (systemscan network-monitor)")
+    console.print(
+        "  [bold cyan]1.[/bold cyan] Launch Live Dual-Mode Network Threat Monitor (systemscan network-monitor)"
+    )
     console.print("  [bold cyan]2.[/bold cyan] View Sensor Operational Status & Coverage")
     console.print("  [bold cyan]3.[/bold cyan] Run Capture Diagnostics (Driver & Permissions)")
     console.print("  [bold cyan]4.[/bold cyan] View Detected Network Threat Alerts")
@@ -570,17 +569,23 @@ def action_network_audit() -> None:
         sub_ch = Prompt.ask("\nSelect action", default="0").strip()
         if sub_ch == "1":
             from systemscan.cli.commands.network_monitor import run_live_monitor
-            dur = Prompt.ask("Enter monitoring duration in seconds (0 for continuous)", default="15").strip()
+
+            dur = Prompt.ask(
+                "Enter monitoring duration in seconds (0 for continuous)", default="15"
+            ).strip()
             duration_int = int(dur) if dur.isdigit() and int(dur) > 0 else None
             run_live_monitor(duration=duration_int)
         elif sub_ch == "2":
             from systemscan.cli.commands.network_monitor import status_command
+
             status_command()
         elif sub_ch == "3":
             from systemscan.cli.commands.network_monitor import diagnostics_command
+
             diagnostics_command()
         elif sub_ch == "4":
             from systemscan.cli.commands.network_monitor import alerts_command
+
             alerts_command()
     except Exception:
         pass

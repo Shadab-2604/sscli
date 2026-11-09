@@ -30,13 +30,27 @@ app = typer.Typer(
 
 
 @app.callback(invoke_without_command=True)
-def reports_default(ctx: typer.Context) -> None:
+def reports_default(
+    ctx: typer.Context,
+    latest: Annotated[
+        bool,
+        typer.Option("--latest", "-l", help="Display the latest scan report directly."),
+    ] = False,
+) -> None:
     """List generated scan reports or display reporting status."""
     if ctx.invoked_subcommand is not None:
         return
 
     mgr = ReportStorageManager()
     reports = mgr.list_reports()
+
+    if latest:
+        if not reports:
+            console.print("\n[yellow]No scan reports found.[/yellow]\n")
+            return
+        latest_id = reports[0]["report_id"]
+        show_report(latest_id)
+        return
 
     console.print()
     print_info("Report Storage Location", str(mgr.storage_dir))

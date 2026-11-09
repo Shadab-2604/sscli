@@ -10,8 +10,11 @@ from systemscan.platform.detection import (
     detect_installation_type,
     detect_platform,
     detect_platform_name,
+    is_android,
     is_apple_silicon,
     is_kali_linux,
+    is_nethunter,
+    is_termux,
 )
 from systemscan.platform.linux import LinuxPlatform
 from systemscan.platform.macos import MacOSPlatform
@@ -32,6 +35,9 @@ __all__ = [
     "detect_installation_type",
     "detect_platform",
     "detect_platform_name",
+    "is_android",
     "is_apple_silicon",
     "is_kali_linux",
+    "is_nethunter",
+    "is_termux",
 ]

@@ -84,4 +84,3 @@ class LinuxSecurityProvider:
             backend_name="None Detected",
             warnings=["No active Linux firewall backend (UFW, nftables, iptables) detected."],
         )
-

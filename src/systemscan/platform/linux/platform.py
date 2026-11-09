@@ -31,10 +31,22 @@ class LinuxPlatform(PlatformInterface):
 
     @property
     def os_type(self) -> OSType:
+        from systemscan.platform.detection import is_android
+
+        if is_android():
+            return OSType.ANDROID
         return OSType.LINUX
 
     @property
     def os_name(self) -> str:
+        from systemscan.platform.detection import is_android, is_nethunter, is_termux
+
+        if is_nethunter():
+            return "Kali NetHunter (Android)"
+        if is_termux():
+            return "Android (Termux)"
+        if is_android():
+            return "Android"
         distro, ver = self.get_linux_distribution()
         if distro:
             return f"{distro} {ver}".strip()
@@ -77,7 +89,18 @@ class LinuxPlatform(PlatformInterface):
         }
 
     def get_linux_distribution(self) -> tuple[str | None, str | None]:
-        """Parse Linux distribution name and version from standard files."""
+        """Parse Linux/Android distribution name and version from standard files."""
+        from systemscan.platform.detection import is_android, is_nethunter, is_termux
+
+        # Check Android / NetHunter environments first
+        if is_nethunter():
+            return ("Kali NetHunter", platform.release())
+        if is_termux():
+            t_ver = os.environ.get("TERMUX_VERSION", "")
+            return ("Android (Termux)", t_ver or platform.release())
+        if is_android():
+            return ("Android", platform.release())
+
         # 1. /etc/os-release (freedesktop standard)
         for release_path in ("/etc/os-release", "/usr/lib/os-release"):
             if os.path.exists(release_path):
@@ -130,6 +153,43 @@ class LinuxPlatform(PlatformInterface):
         info.manufacturer = _read_dmi("sys_vendor") or _read_dmi("board_vendor")
         info.product_model = _read_dmi("product_name") or _read_dmi("board_name")
         info.firmware_type = "UEFI" if os.path.isdir("/sys/firmware/efi") else "BIOS"
+
+        # Android fallback when DMI is unavailable (phones / tablets)
+        if not info.manufacturer:
+            try:
+                import shutil
+
+                if shutil.which("getprop"):
+                    r_mfg = subprocess.run(
+                        ["getprop", "ro.product.manufacturer"],
+                        capture_output=True,
+                        text=True,
+                        timeout=2,
+                        check=False,
+                    )
+                    r_model = subprocess.run(
+                        ["getprop", "ro.product.model"],
+                        capture_output=True,
+                        text=True,
+                        timeout=2,
+                        check=False,
+                    )
+                    r_bl = subprocess.run(
+                        ["getprop", "ro.bootloader"],
+                        capture_output=True,
+                        text=True,
+                        timeout=2,
+                        check=False,
+                    )
+                    if r_mfg.returncode == 0 and r_mfg.stdout.strip():
+                        info.manufacturer = r_mfg.stdout.strip()
+                    if r_model.returncode == 0 and r_model.stdout.strip():
+                        info.product_model = r_model.stdout.strip()
+                    if r_bl.returncode == 0 and r_bl.stdout.strip():
+                        info.bios_version = r_bl.stdout.strip()
+                    info.firmware_type = "Android Bootloader"
+            except Exception:
+                pass
 
         if include_serials:
             info.serial_number = _read_dmi("product_serial") or _read_dmi("board_serial")
@@ -350,6 +410,30 @@ class LinuxPlatform(PlatformInterface):
                         )
         except Exception as e:
             logger.debug(f"Could not execute lsblk: {e}")
+
+        # Fallback for environments without lsblk (such as Termux on Android)
+        if not disks:
+            try:
+                import psutil
+
+                for part in psutil.disk_partitions(all=False):
+                    try:
+                        usage = psutil.disk_usage(part.mountpoint)
+                        disks.append(
+                            DiskInformation(
+                                name=part.device,
+                                model=part.fstype,
+                                size_bytes=usage.total,
+                                is_removable="media" in part.mountpoint
+                                or "sdcard" in part.mountpoint,
+                                is_physical=True,
+                                partitions=[],
+                            )
+                        )
+                    except Exception:
+                        pass
+            except Exception:
+                pass
 
         return disks
 

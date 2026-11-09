@@ -30,9 +30,25 @@ def get_static_cpu_info() -> dict[str, Any]:
         logger.debug(f"py-cpuinfo failed: {e}. Falling back to platform info.")
         info = {}
 
-    brand = info.get("brand_raw") or platform.processor() or "Unknown CPU"
+    brand = info.get("brand_raw") or platform.processor() or ""
     vendor = info.get("vendor_id_raw") or "Unknown"
     arch = info.get("arch") or platform.machine()
+
+    # ARM / Android / Termux fallback to /proc/cpuinfo
+    if (not brand or brand == "Unknown CPU") and os.path.exists("/proc/cpuinfo"):
+        try:
+            with open("/proc/cpuinfo", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    if ":" in line:
+                        k, v = [x.strip() for x in line.split(":", 1)]
+                        if k.lower() in ("model name", "hardware", "processor") and v:
+                            brand = v
+                            break
+        except Exception:
+            pass
+
+    if not brand:
+        brand = "Unknown CPU"
 
     _CACHED_CPU_STATIC = {
         "vendor": vendor,

@@ -19,7 +19,9 @@ def generate_benchmark_tree(root: Path, total_files: int = 5000, files_per_dir: 
     num_dirs = max(1, total_files // files_per_dir)
     created = 0
 
-    print(f"Generating synthetic benchmark tree with {total_files} files across {num_dirs} directories...")
+    print(
+        f"Generating synthetic benchmark tree with {total_files} files across {num_dirs} directories..."
+    )
     for d_idx in range(num_dirs):
         dir_path = root / f"bench_dir_{d_idx:04d}"
         dir_path.mkdir(parents=True, exist_ok=True)
@@ -72,4 +74,3 @@ def run_benchmark(target_files: int = 5000) -> None:
 
 if __name__ == "__main__":
     run_benchmark(5000)
-

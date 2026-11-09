@@ -44,7 +44,7 @@ class WindowsPlatform(PlatformInterface):
 
     @property
     def architecture(self) -> str:
-        return platform.machine()
+        return platform.machine() or os.environ.get("PROCESSOR_ARCHITECTURE", "AMD64")
 
     @property
     def capabilities(self) -> PlatformCapabilities:

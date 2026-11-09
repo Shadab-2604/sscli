@@ -3,20 +3,23 @@
     Universal System Security & Intelligence CLI (systemscan) - Safe Installer for Windows
 .DESCRIPTION
     Validates Python 3.10+, provisions an isolated virtual environment, installs systemscan,
-    and validates CLI entry point availability.
+    configures global command execution, and validates CLI entry point availability.
 .PARAMETER VenvDir
     Directory path for the isolated virtual environment (default: .venv).
+.PARAMETER Global
+    Configures global command shim so 'systemscan' can be run from ANY terminal without activating venv.
 .PARAMETER DryRun
     Simulates pre-flight validation without modifying the filesystem.
 .EXAMPLE
     .\scripts\install.ps1
 .EXAMPLE
-    .\scripts\install.ps1 -DryRun
+    .\scripts\install.ps1 -Global
 #>
 
 [CmdletBinding()]
 param (
     [string]$VenvDir = ".venv",
+    [switch]$Global,
     [switch]$DryRun
 )
 
@@ -34,7 +37,7 @@ Write-Host "Detected Platform: Windows ($arch) - $($osInfo.Caption)" -Foreground
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if ($isAdmin) {
     Write-Host "[!] Note: Running as Administrator is not required for installation." -ForegroundColor Yellow
-    Write-Host "    SystemScan installs safely into user-scoped virtual environments." -ForegroundColor Yellow
+    Write-Host "    SystemScan installs safely into user-scoped environments." -ForegroundColor Yellow
 }
 
 # 3. Discover Python 3.10+ Executable
@@ -76,8 +79,8 @@ if ($DryRun) {
     Write-Host "Planned Actions:"
     Write-Host "  1. Create virtual environment at: $VenvDir"
     Write-Host "  2. Upgrade pip inside virtual environment"
-    Write-Host "  3. Install systemscan package from local repository root"
-    Write-Host "  4. Validate '$VenvDir\Scripts\systemscan.exe version'"
+    Write-Host "  3. Install systemscan package in editable mode"
+    Write-Host "  4. Register global systemscan command in user PATH"
     exit 0
 }
 
@@ -101,28 +104,72 @@ if (-not (Test-Path $venvPython)) {
 }
 
 # 6. Install Package
-Write-Host "Upgrading pip and installing SystemScan..." -ForegroundColor White
+Write-Host "Upgrading pip and installing SystemScan with dependencies..." -ForegroundColor White
 & $venvPython -m pip install --upgrade pip --quiet
-& $venvPython -m pip install $repoRoot --quiet
+& $venvPython -m pip install -e $repoRoot --quiet
 
-# 7. Verification
+# 7. Global Command Registration
+$globalInstalled = $false
+$targetShimDir = $null
+
+# Check candidates on existing PATH
+$pathDirs = $env:PATH -split ';'
+$preferredDirs = @(
+    "$env:LOCALAPPDATA\Python\bin",
+    "$env:USERPROFILE\.local\bin",
+    "$env:APPDATA\Python\Scripts"
+)
+
+foreach ($dir in $preferredDirs) {
+    if ($pathDirs -contains $dir -or (Test-Path $dir)) {
+        $targetShimDir = $dir
+        break
+    }
+}
+
+if (-not $targetShimDir) {
+    $targetShimDir = "$env:LOCALAPPDATA\Python\bin"
+}
+
+if (-not (Test-Path $targetShimDir)) {
+    New-Item -ItemType Directory -Path $targetShimDir -Force | Out-Null
+}
+
+$shimPath = Join-Path $targetShimDir "systemscan.cmd"
+$shimContent = @"
+@echo off
+setlocal
+if exist "$venvPython" (
+    "$venvPython" -m systemscan %*
+) else (
+    python -m systemscan %*
+)
+endlocal
+"@
+
+Set-Content -Path $shimPath -Value $shimContent -Force
+Write-Host "Global command shim registered at: $shimPath" -ForegroundColor Green
+
+# Check if targetShimDir is in PATH
+if ($env:PATH -split ';' -contains $targetShimDir) {
+    $globalInstalled = $true
+} else {
+    Write-Host "[!] Note: '$targetShimDir' is not yet in your active PATH." -ForegroundColor Yellow
+    Write-Host "    To run 'systemscan' from ANY terminal without activating venv, add it to your user PATH:" -ForegroundColor Yellow
+    Write-Host "    [Environment]::SetEnvironmentVariable('PATH', [Environment]::GetEnvironmentVariable('PATH', 'User') + ';$targetShimDir', 'User')" -ForegroundColor Cyan
+}
+
+# 8. Verification
 if (Test-Path $venvSystemscan) {
     Write-Host ""
     Write-Host "=== Installation Successful! ===" -ForegroundColor Green
     & $venvSystemscan version
     Write-Host ""
-    Write-Host "To activate the environment in PowerShell:" -ForegroundColor White
-    Write-Host "  .$VenvDir\Scripts\Activate.ps1" -ForegroundColor Cyan
-    Write-Host "Or in Command Prompt (CMD):" -ForegroundColor White
-    Write-Host "  $VenvDir\Scripts\activate.bat" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "Then launch the interactive scanner menu:" -ForegroundColor White
-    Write-Host "  systemscan" -ForegroundColor Cyan
-    Write-Host "Or execute non-interactive telemetry:" -ForegroundColor White
-    Write-Host "  systemscan info" -ForegroundColor Cyan
+    Write-Host "You can now run 'systemscan' directly from any terminal:" -ForegroundColor White
+    Write-Host "  systemscan            (Launches the interactive terminal dashboard)" -ForegroundColor Cyan
+    Write-Host "  systemscan doctor     (Diagnoses dependencies & platform matrix)" -ForegroundColor Cyan
+    Write-Host "  systemscan scan .     (Performs read-only filesystem inspection)" -ForegroundColor Cyan
 } else {
     Write-Host "[ERROR] 'systemscan.exe' was not created in $targetVenvPath\Scripts." -ForegroundColor Red
-    Write-Host "You can still run the application via: $venvPython -m systemscan" -ForegroundColor Yellow
     exit 1
 }
-

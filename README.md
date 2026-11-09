@@ -3,9 +3,9 @@
 [![CI Pipeline](https://github.com/Shadab-2604/sscli/actions/workflows/ci.yml/badge.svg)](https://github.com/Shadab-2604/sscli/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-green)](https://github.com/Shadab-2604/sscli)
+[![Platform Support](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS%20%7C%20Android%20(Termux%2FNetHunter)-green)](https://github.com/Shadab-2604/sscli)
 
-**Universal System Security & Intelligence CLI** (`systemscan`) is an enterprise-grade, cross-platform command-line utility for comprehensive system auditing, forensic diagnostics, static malware inspection, network intelligence, and safe storage optimization across Linux, Windows, and macOS.
+**Universal System Security & Intelligence CLI** (`systemscan`) is an enterprise-grade, cross-platform command-line utility for comprehensive system auditing, forensic diagnostics, static malware inspection, network intelligence, and safe storage optimization across Linux, Windows, macOS, and Android (Termux / Kali NetHunter).
 
 ---
 
@@ -78,6 +78,8 @@ In accordance with our truthful compatibility standard, platforms are classified
 | **Ubuntu (22.04 / 24.04 LTS)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Verified in automated GitHub Actions CI matrix runner. |
 | **Debian (11 / 12)** | x86_64 / arm64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Standard Debian Linux architecture; verified via unit test mocks. |
 | **Kali Linux (2023.x / 2024.x)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Debian derivative; verified against standard `/proc/net` and `psutil`. |
+| **Kali NetHunter (Android)** | aarch64 / armv7l | `LinuxPlatformProvider` | **SUPPORTED BY DESIGN** | NetHunter rootless/chroot/rooted Android environments. |
+| **Android (Termux)** | aarch64 / armv7l / x86_64 | `LinuxPlatformProvider` | **SUPPORTED BY DESIGN** | Termux userland environment with `$PREFIX` pathing and Android property queries. |
 | **Fedora Linux (38 / 39 / 40)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Verified with systemd and procfs abstractions. |
 | **Arch Linux** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Rolling-release Linux architecture; verified via standard POSIX APIs. |
 | **macOS (Sonoma / Ventura)** | Apple Silicon & Intel | `DarwinPlatformProvider` | **PARTIALLY TESTED** | Verified in automated GitHub Actions CI matrix runner (`macos-latest`). |
@@ -112,85 +114,149 @@ graph TD
 
 ## 5. Installation Guides
 
-### Automated Safe Installation (Recommended)
+### 5.1. Global Terminal Installation (Recommended)
 
-#### Linux & macOS:
+`systemscan` can be installed as a global command that can be run from **any terminal** without manually activating a virtual environment:
+
+#### Option A: via `pipx` (Cross-Platform)
 ```bash
+# Clone the official repository
 git clone https://github.com/Shadab-2604/sscli.git
 cd sscli
-bash scripts/install.sh
+
+# Install globally with isolated dependencies
+pipx install .
+pipx ensurepath
 ```
 
-#### Windows (PowerShell):
-```powershell
-git clone https://github.com/Shadab-2604/sscli.git
-cd sscli
-powershell -ExecutionPolicy Bypass -File scripts\install.ps1
-```
+#### Option B: Automated User Installers
+- **Linux & macOS**:
+  ```bash
+  chmod +x scripts/install.sh
+  ./scripts/install.sh
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Global
+  ```
+- **Android (Termux)**:
+  ```bash
+  pkg update && pkg install python python-pip git -y
+  git clone https://github.com/Shadab-2604/sscli.git && cd sscli
+  ./scripts/install.sh
+  ln -sf $(pwd)/scripts/systemscan $PREFIX/bin/systemscan
+  ```
+- **Kali NetHunter (Android)**:
+  ```bash
+  sudo apt update && sudo apt install python3 python3-pip python3-venv git -y
+  git clone https://github.com/Shadab-2604/sscli.git && cd sscli
+  ./scripts/install.sh
+  ```
 
-### Manual Installation via Virtual Environment
-
-```bash
-# 1. Create an isolated virtual environment
-python3 -m venv .venv
-
-# 2. Activate virtual environment
-# Linux/macOS:
-source .venv/bin/activate
-# Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# Windows (CMD):
-.venv\Scripts\activate.bat
-
-# 3. Upgrade pip and install package
-python -m pip install --upgrade pip
-python -m pip install .
-
-# 4. Verify installation
-systemscan --version
-systemscan info
-```
-
-For full platform-specific distribution guides, refer to [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
+For detailed instructions on PATH configuration, user shims, and shell setup, see [`docs/GLOBAL_INSTALLATION.md`](docs/GLOBAL_INSTALLATION.md) and [`docs/INSTALLATION.md`](docs/INSTALLATION.md).
 
 ---
 
-## 6. Quick-Start Walkthrough
+## 6. Interactive Terminal CLI & Quick-Start
 
-### Launch the Interactive Terminal Dashboard:
+When executed with no arguments from any terminal, `systemscan` displays a clean, compact cybersecurity CLI welcome screen followed by an interactive numbered menu:
+
 ```bash
 systemscan
 ```
 
-### Display System Overview:
+### Interactive CLI Menu & Layout
+
+```text
+SSCLI / SYSTEM SECURITY & INTELLIGENCE
+Universal System Security Scanner v1.0.0
+
+[SYSTEM]
+OS       : Windows 11 Enterprise
+CPU      : AMD Ryzen / Intel Core / ARM64
+RAM      : 16 GB
+STATUS   : READY
+
+[MAIN MENU]
+
+ 1. System Information
+ 2. Quick Security Scan
+ 3. Full System Scan
+ 4. Custom Path Scan
+ 5. Malware Detection
+ 6. Storage Analyzer (with Partition & Cache Sizes)
+ 7. Network Security Audit
+ 8. USB / External Device Scanner & Repair
+ 9. Scan History
+ 10. Reports & Export
+ 11. Dependency Doctor (with Interactive Pip Installer)
+ 12. Settings
+ 13. Check for Updates & Self-Update
+ 0. Exit
+
+Select an option:
+```
+
+### Live Scanning Output
+
+When a scan is initiated, `systemscan` streams compact, in-line progress updates in the normal terminal buffer:
+
+```text
+[INFO] Initializing scanner...
+[INFO] Scan type: Quick Security Scan
+[INFO] Target: C:\Users\...
+  [SCAN] Files scanned       : 846
+  [SCAN] Directories scanned : 171
+  [SCAN] Data scanned        : 215.35 MB
+  [SCAN] Progress            : 46% (ETA: 12s)
+  [WARN] Permission errors   : 0
+  [OK]   Threats detected    : 0
+
+[OK] Scan completed in 3.42s
+[INFO] Summary: 1,420 files, 185 directories, 450.21 MB scanned.
+[OK] Threats detected: 0
+[INFO] Report saved: C:\Users\...\AppData\Local\systemscan\reports\scan-12345.json
+
+Press Enter to return to the main menu...
+```
+
+### Direct CLI Commands for Scripting & Automation
+
+All subcommands work independently of the interactive menu for automated pipelines, scripts, or headless runs:
+
 ```bash
+# Display System Overview:
 systemscan info --format text
-```
+systemscan system-info
 
-### Run Live Performance Monitor:
-```bash
+# Fast Heuristic Security Scan:
+systemscan scan --quick
+
+# Full Volume Deep Scan:
+systemscan scan --full
+
+# Targeted Path Scan:
+systemscan scan --path /path/to/project
+
+# Run Live Performance Monitor:
 systemscan monitor --interval 1.0
-```
 
-### Audit Active Network Sockets:
-```bash
+# Audit Active Network Sockets & Firewall:
 systemscan network sockets --format text
-```
+systemscan network firewall
 
-### Scan Directory for Malware Indicators:
-```bash
+# Scan Directory for Malware Indicators:
 systemscan malware scan ~/Downloads
-```
 
-### Preview and Clean Reclaimable Storage:
-```bash
+# Safe Storage Cleanup (Two-Stage Human-in-the-Loop):
 systemscan cleanup preview
 systemscan cleanup clean --preview-id <PREVIEW_ID> --confirm
-```
 
-### Diagnose System Health & Dependencies:
-```bash
+# Diagnose Host Environment & Capabilities:
 systemscan doctor --verbose
+
+# View Latest Audit Report:
+systemscan report --latest
 ```
 
 ---

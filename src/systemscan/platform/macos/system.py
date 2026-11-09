@@ -75,7 +75,9 @@ class MacOSSystemProvider:
                                 name=f.stem,
                                 command=str(f),
                                 source=str(d),
-                                scope="user" if "~/Library" in str(d) or "Users" in str(d) else "system",
+                                scope="user"
+                                if "~/Library" in str(d) or "Users" in str(d)
+                                else "system",
                                 status="enabled",
                             )
                         )

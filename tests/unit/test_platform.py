@@ -46,3 +46,27 @@ def test_detect_installation_type() -> None:
     install_type = detect_installation_type()
     assert isinstance(install_type, str)
     assert len(install_type) > 0
+
+
+def test_android_and_termux_detection() -> None:
+    """Verify Android, Termux, and Kali NetHunter environment detection."""
+    from unittest.mock import patch
+
+    from systemscan.platform.detection import (
+        detect_detailed_platform_name,
+        is_android,
+        is_nethunter,
+        is_termux,
+    )
+
+    with patch.dict("os.environ", {"TERMUX_VERSION": "0.118"}):
+        assert is_termux() is True
+        assert is_android() is True
+        assert detect_detailed_platform_name() == "Android (Termux)"
+
+    with patch.dict("os.environ", {"NETHUNTER": "1"}):
+        assert is_nethunter() is True
+        assert detect_detailed_platform_name() == "Kali NetHunter (Android)"
+
+    with patch.dict("os.environ", {"ANDROID_ROOT": "/system"}):
+        assert is_android() is True

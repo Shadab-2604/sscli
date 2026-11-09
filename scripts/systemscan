@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+    exec "$SCRIPT_DIR/.venv/bin/python" -m systemscan "$@"
+else
+    exec python3 -m systemscan "$@"
+fi
+

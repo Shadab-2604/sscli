@@ -47,4 +47,3 @@ class LinuxFilesystemProvider:
             normalized.startswith(prefix)
             for prefix in ("/proc", "/sys", "/dev", "/run", "/var/run")
         )
-

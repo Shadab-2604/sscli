@@ -19,6 +19,7 @@ from systemscan.devices.models import (
 from systemscan.devices.monitor import DeviceMonitor
 from systemscan.devices.policies import PolicyManager
 from systemscan.devices.providers import get_device_provider
+from systemscan.devices.repair import StorageRepairEngine
 
 __all__ = [
     "BusType",
@@ -35,5 +36,6 @@ __all__ = [
     "DeviceScanningPolicy",
     "PartitionMetadata",
     "PolicyManager",
+    "StorageRepairEngine",
     "get_device_provider",
 ]

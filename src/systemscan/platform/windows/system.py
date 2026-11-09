@@ -56,8 +56,16 @@ class WindowsSystemProvider:
         """Inspect standard Windows Registry Run keys for startup persistence."""
         entries: list[StartupEntry] = []
         keys = [
-            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKCU\\Run"),
-            (winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\Windows\CurrentVersion\Run", "HKLM\\Run"),
+            (
+                winreg.HKEY_CURRENT_USER,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                "HKCU\\Run",
+            ),
+            (
+                winreg.HKEY_LOCAL_MACHINE,
+                r"Software\Microsoft\Windows\CurrentVersion\Run",
+                "HKLM\\Run",
+            ),
         ]
 
         for hive, subkey, label in keys:

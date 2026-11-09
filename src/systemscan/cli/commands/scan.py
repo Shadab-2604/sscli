@@ -51,6 +51,20 @@ def scan_command(
             help="Discover and scan all accessible mounted filesystem roots and storage volumes.",
         ),
     ] = False,
+    full: Annotated[
+        bool,
+        typer.Option(
+            "--full",
+            help="Execute full system scan across all accessible storage volumes.",
+        ),
+    ] = False,
+    quick: Annotated[
+        bool,
+        typer.Option(
+            "--quick",
+            help="Execute quick security scan across user home and critical paths.",
+        ),
+    ] = False,
     max_depth: Annotated[
         int | None,
         typer.Option(
@@ -113,6 +127,13 @@ def scan_command(
 
     scanner = FilesystemScanner()
     token = CancellationToken()
+
+    if full:
+        all_volumes = True
+    if quick and not path:
+        path = [str(Path.home())]
+        if max_depth is None:
+            max_depth = 4
 
     # Determine target scan roots
     target_roots: list[str] = []

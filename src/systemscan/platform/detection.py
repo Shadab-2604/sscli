@@ -14,13 +14,61 @@ from systemscan.platform.macos import MacOSPlatform
 from systemscan.platform.windows import WindowsPlatform
 
 
+def is_android() -> bool:
+    """Check if the current host environment is Android (Termux, native, or NetHunter)."""
+    if hasattr(os, "getandroidapilevel"):
+        return True
+    if os.environ.get("ANDROID_ROOT") or os.environ.get("ANDROID_DATA"):
+        return True
+    if os.environ.get("TERMUX_VERSION") or "/com.termux/" in os.environ.get("PREFIX", ""):
+        return True
+    if os.environ.get("NETHUNTER") or os.environ.get("KALI_NETHUNTER"):
+        return True
+    return False
+
+
+def is_termux() -> bool:
+    """Check if the application is running inside a Termux Android environment."""
+    return bool(os.environ.get("TERMUX_VERSION") or "/com.termux/" in os.environ.get("PREFIX", ""))
+
+
+def is_nethunter() -> bool:
+    """Check if host is running Kali NetHunter (Android/chroot)."""
+    if os.environ.get("NETHUNTER") or os.environ.get("KALI_NETHUNTER"):
+        return True
+    try:
+        rel = platform.release().lower()
+        if "nethunter" in rel or "nh-" in rel:
+            return True
+    except Exception:
+        pass
+    if (
+        os.environ.get("ANDROID_ROOT")
+        or os.environ.get("ANDROID_DATA")
+        or hasattr(os, "getandroidapilevel")
+    ):
+        for nh_path in (
+            "/data/local/nhsystem",
+            "/data/data/com.offsec.nethunter",
+            "/sdcard/nh_files",
+        ):
+            try:
+                if Path(nh_path).exists():
+                    return True
+            except Exception:
+                pass
+    return False
+
+
 def detect_os_family() -> str:
-    """Return normalized OS family key: 'linux', 'windows', 'macos', or 'unsupported'."""
+    """Return normalized OS family key: 'linux', 'windows', 'macos', 'android', or 'unsupported'."""
     sys_plat = sys.platform.lower()
     if sys_plat.startswith("win"):
         return "windows"
     if sys_plat.startswith("darwin"):
         return "macos"
+    if is_android():
+        return "android"
     if sys_plat.startswith("linux"):
         return "linux"
 
@@ -29,6 +77,8 @@ def detect_os_family() -> str:
         return "windows"
     if system.startswith("darwin"):
         return "macos"
+    if is_android():
+        return "android"
     if system.startswith("linux"):
         return "linux"
 
@@ -37,7 +87,8 @@ def detect_os_family() -> str:
 
 def is_kali_linux() -> bool:
     """Check if the current host is Kali Linux."""
-    if detect_os_family() != "linux":
+    family = detect_os_family()
+    if family not in ("linux", "android"):
         return False
     try:
         os_release = Path("/etc/os-release")
@@ -61,14 +112,24 @@ def is_apple_silicon() -> bool:
 
 
 def detect_detailed_platform_name() -> str:
-    """Return specific platform target name among the 5 supported platforms:
-    1. Kali Linux
-    2. Windows 10
-    3. Windows 11
-    4. macOS Intel
-    5. macOS Apple Silicon
+    """Return specific platform target name among supported platforms:
+    - Kali NetHunter (Android)
+    - Android (Termux)
+    - Android
+    - Kali Linux
+    - Linux (Ubuntu/Debian/Fedora/Arch)
+    - Windows 10
+    - Windows 11
+    - macOS Intel
+    - macOS Apple Silicon
     """
     family = detect_os_family()
+    if is_nethunter():
+        return "Kali NetHunter (Android)"
+    if is_termux():
+        return "Android (Termux)"
+    if family == "android":
+        return "Android"
     if family == "linux":
         if is_kali_linux():
             return "Kali Linux"
@@ -92,8 +153,8 @@ def detect_detailed_platform_name() -> str:
 
 
 def detect_platform_name(detailed: bool = False) -> str:
-    """Return platform key string ('linux', 'windows', 'macos').
-    If detailed=True, returns specific platform target (e.g. 'Windows 11', 'Kali Linux').
+    """Return platform key string ('linux', 'windows', 'macos', 'android').
+    If detailed=True, returns specific platform target (e.g. 'Windows 11', 'Kali Linux', 'Android (Termux)').
     """
     if detailed:
         return detect_detailed_platform_name()
@@ -105,14 +166,14 @@ def detect_platform() -> PlatformInterface:
     family = detect_os_family()
     if family == "windows":
         return WindowsPlatform()
-    elif family == "linux":
+    elif family in ("linux", "android"):
         return LinuxPlatform()
     elif family == "macos":
         return MacOSPlatform()
     else:
         raise UnsupportedPlatformError(
             f"Unsupported operating system: '{sys.platform}'. "
-            "systemscan currently supports Windows 10/11, Linux (Kali/Ubuntu/Debian/Fedora/Arch), and macOS (Intel & Apple Silicon)."
+            "systemscan currently supports Windows 10/11, Linux (Kali/Ubuntu/Debian/Fedora/Arch), Android (Termux / NetHunter), and macOS (Intel & Apple Silicon)."
         )
 
 

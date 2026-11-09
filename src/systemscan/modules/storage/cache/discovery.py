@@ -57,6 +57,13 @@ class CacheDiscoveryEngine:
 
         targets.append(("Temporary Files", Path("/tmp")))
         targets.append(("System Temporary", Path("/var/tmp")))
+
+        # Android / Termux cache targets
+        if os.environ.get("PREFIX"):
+            termux_prefix = Path(os.environ["PREFIX"])
+            targets.append(("Termux Temporary", termux_prefix / "tmp"))
+            targets.append(("Termux Var Cache", termux_prefix / "var" / "cache"))
+
         return targets
 
     @classmethod

@@ -96,6 +96,9 @@ ignore = [
     "E501", # line too long (handled by formatter)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402", "F401", "F841", "I001"]
+
 [tool.mypy]
 python_version = "3.10"
 packages = ["systemscan"]

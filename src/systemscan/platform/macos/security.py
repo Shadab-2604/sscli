@@ -62,4 +62,3 @@ class MacOSSecurityProvider:
             default_inbound_action=FirewallAction.BLOCK,
             default_outbound_action=FirewallAction.ALLOW,
         )
-

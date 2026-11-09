@@ -107,7 +107,9 @@ class LinuxSystemProvider:
                                 name=f.stem,
                                 command=str(f),
                                 source=str(d),
-                                scope="user" if "/home/" in str(d) or ".config" in str(d) else "system",
+                                scope="user"
+                                if "/home/" in str(d) or ".config" in str(d)
+                                else "system",
                                 status="enabled",
                             )
                         )

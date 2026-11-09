@@ -23,6 +23,7 @@ class OSType(str, Enum):
     WINDOWS = "windows"
     LINUX = "linux"
     MACOS = "macos"
+    ANDROID = "android"
     UNKNOWN = "unknown"
 
 

@@ -8,7 +8,7 @@
 
 ## 1. Global Options & Interactive Mode
 
-When invoked without subcommands, `systemscan` launches an interactive terminal dashboard.
+When invoked without subcommands in an interactive terminal (TTY), `systemscan` immediately launches the interactive terminal command center dashboard.
 
 ```bash
 systemscan [OPTIONS] [COMMAND]
@@ -21,20 +21,25 @@ systemscan [OPTIONS] [COMMAND]
 | `--debug` | `-d` | Enable diagnostic debug mode with full exception tracebacks. | `False` |
 | `--verbose` | | Enable informational logging output. | `False` |
 | `--no-banner` | | Suppress ASCII/Rich startup header banner. | `False` |
-| `--interactive` | `-i` | Explicitly launch interactive terminal menu. | `False` |
+| `--interactive` | `-i` | Explicitly launch interactive terminal dashboard. | `False` |
 | `--help` | | Show usage help and command directory. | |
 
-### Standard Exit Codes:
-- `0`: Success (No issues or command completed cleanly).
-- `1`: General Error (Command failed, missing dependency, or operation aborted).
-- `2`: Parameter / Validation Error (Invalid CLI argument or schema violation).
-- `3`: Security Violation (Zip-slip, path traversal, or unauthorized privilege escalation attempt).
+### 1.1. `systemscan dashboard`
+Launches the interactive numbered CLI menu.
+```bash
+systemscan dashboard
+```
+Provides:
+- Compact host summary: OS, CPU, RAM, system status.
+- Numbered menu navigation (`1`–`12`, `0` to exit).
+- Live real-time scan progress in standard terminal scrolling output.
+- Clean prompts and non-intrusive terminal interaction.
 
 ---
 
 ## 2. System Intelligence & Telemetry Commands
 
-### 2.1. `systemscan info`
+### 2.1. `systemscan info` / `systemscan system-info`
 Displays operating system release, kernel, architecture, hostname, uptime, active shell, and sanitized environment metrics.
 - **Permissions:** Unprivileged user.
 - **Options:**
@@ -42,6 +47,7 @@ Displays operating system release, kernel, architecture, hostname, uptime, activ
 - **Example:**
   ```bash
   systemscan info --format json
+  systemscan system-info
   ```
 
 ### 2.2. `systemscan hardware`
@@ -107,6 +113,8 @@ Live, dynamic terminal telemetry dashboard with real-time updating meters for CP
 Executes safe, read-only traversal and metadata inspection across target directory roots.
 - **Permissions:** Unprivileged user.
 - **Options:**
+  - `--quick`: Fast heuristic scan of the user profile directory (max depth: 4).
+  - `--full`: Comprehensive scan across all accessible storage volumes and mount points.
   - `--path` (`-p`): Target directory path (can be specified multiple times).
   - `--all-volumes`: Discover and scan all accessible logical drives or mounts.
   - `--max-depth`: Restrict traversal recursion depth (default: unlimited).
@@ -114,8 +122,10 @@ Executes safe, read-only traversal and metadata inspection across target directo
   - `--follow-symlinks`: Enable safe symlink following with cycle detection (default: false).
   - `--exclude` (`-e`): Exclude paths, directory names, or glob patterns.
   - `--format`: `text` or `json`.
-- **Example:**
+- **Examples:**
   ```bash
+  systemscan scan --quick
+  systemscan scan --full
   systemscan scan --path /home/user/Documents --exclude "*.tmp" --exclude "node_modules"
   ```
 
@@ -208,14 +218,18 @@ Non-destructive safe cleanup workflow with mandatory human confirmation.
 
 ### 6.1. `systemscan reports` / `report`
 Unified multi-format report generation, inspection, and verification engine.
+- **Options / Flags:**
+  - `--latest`: Display the executive summary of the most recently generated report.
 - **Subcommands:**
   - `list`: Enumerate all stored scan reports.
-  - `show <report_id>`: Display an executive summary of a previous report.
+  - `show <report_id> [--latest]`: Display an executive summary of a report.
   - `export <report_id> --format [json|csv|txt]`: Export report to a designated file.
   - `verify <report_id>`: Verify cryptographic SHA-256 checksum manifest of a report file.
   - `delete <report_id>`: Safely delete an archived report file.
-- **Example:**
+- **Examples:**
   ```bash
+  systemscan reports list
+  systemscan report --latest
   systemscan report export rep-abc12345 --format json --output report.json
   ```
 

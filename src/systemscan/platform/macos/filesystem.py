@@ -32,4 +32,3 @@ class MacOSFilesystemProvider:
         if volumes_dir.exists():
             return [p for p in volumes_dir.iterdir() if p.is_dir()]
         return []
-

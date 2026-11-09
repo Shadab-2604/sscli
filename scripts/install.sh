@@ -49,7 +49,11 @@ echo -e "Detected Platform: ${BOLD}${OS_TYPE}${NC} (${ARCH_TYPE})"
 
 case "$OS_TYPE" in
     Linux)
-        if [ -f /etc/os-release ]; then
+        if [ -n "${TERMUX_VERSION:-}" ] || [ -d "/data/data/com.termux" ]; then
+            echo -e "Environment:      ${BOLD}Android (Termux v${TERMUX_VERSION:-detected})${NC}"
+        elif [ -n "${NETHUNTER:-}" ] || [ -d "/data/local/nhsystem" ]; then
+            echo -e "Environment:      ${BOLD}Kali NetHunter (Android)${NC}"
+        elif [ -f /etc/os-release ]; then
             # shellcheck disable=SC1091
             . /etc/os-release
             echo -e "Distribution:     ${BOLD}${PRETTY_NAME:-Linux}${NC}"
@@ -65,7 +69,7 @@ case "$OS_TYPE" in
 esac
 
 # 2. Check root privilege warning
-if [ "$(id -u)" -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ] && [ -z "${NETHUNTER:-}" ]; then
     echo -e "${YELLOW}[!] Warning: Running as root is NOT recommended for package installation.${NC}"
     echo -e "${YELLOW}    SystemScan uses isolated virtual environments and does not need root to install.${NC}"
 fi
@@ -89,6 +93,8 @@ done
 if [ -z "$PYTHON_BIN" ]; then
     echo -e "${RED}[ERROR] Python 3.10 or newer was not found in PATH.${NC}"
     echo "Remediation:"
+    echo "  Android (Termux):   pkg update && pkg install python python-pip git"
+    echo "  Kali NetHunter:     sudo apt-get update && sudo apt-get install python3 python3-venv python3-pip"
     echo "  Ubuntu/Debian/Kali: sudo apt-get update && sudo apt-get install python3 python3-venv python3-pip"
     echo "  Fedora:             sudo dnf install python3 python3-pip"
     echo "  Arch Linux:         sudo pacman -S python python-pip"
@@ -134,17 +140,33 @@ echo "Upgrading pip and installing SystemScan..."
 "$VENV_PYTHON" -m pip install --upgrade pip --quiet
 "$VENV_PYTHON" -m pip install "$REPO_ROOT" --quiet
 
-# 7. Verification
+# 7. Verification & Global Launcher Linking
 if [ -f "$VENV_SYSTEMSCAN" ]; then
     echo -e "\n${GREEN}${BOLD}=== Installation Successful! ===${NC}"
     "$VENV_SYSTEMSCAN" version
+
+    # Automatically link to global PATH if possible
+    GLOBAL_LINKED=false
+    if [ -n "${PREFIX:-}" ] && [ -d "${PREFIX}/bin" ]; then
+        ln -sf "$REPO_ROOT/scripts/systemscan" "${PREFIX}/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
+        echo -e "Global command linked: ${GREEN}${PREFIX}/bin/systemscan${NC}"
+    elif [ -d "/usr/local/bin" ] && [ -w "/usr/local/bin" ]; then
+        ln -sf "$REPO_ROOT/scripts/systemscan" "/usr/local/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
+        echo -e "Global command linked: ${GREEN}/usr/local/bin/systemscan${NC}"
+    elif [ -d "$HOME/.local/bin" ]; then
+        ln -sf "$REPO_ROOT/scripts/systemscan" "$HOME/.local/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
+        echo -e "Global command linked: ${GREEN}$HOME/.local/bin/systemscan${NC}"
+    fi
+
     echo ""
-    echo "To activate the environment in your shell:"
-    echo -e "  ${BOLD}source ${TARGET_VENV}/bin/activate${NC}"
-    echo "Then launch the interactive scanner menu:"
-    echo -e "  ${BOLD}systemscan${NC}"
-    echo "Or run a non-interactive system overview:"
-    echo -e "  ${BOLD}systemscan info${NC}"
+    if [ "$GLOBAL_LINKED" = true ]; then
+        echo -e "You can now run ${BOLD}systemscan${NC} directly from ANY directory!"
+    else
+        echo "To activate the environment in your shell:"
+        echo -e "  ${BOLD}source ${TARGET_VENV}/bin/activate${NC}"
+        echo "Then launch the interactive scanner menu:"
+        echo -e "  ${BOLD}systemscan${NC}"
+    fi
 else
     echo -e "${RED}[ERROR] 'systemscan' CLI entry point was not created in ${TARGET_VENV}/bin.${NC}"
     echo "You can still run the module directly via: ${VENV_PYTHON} -m systemscan"

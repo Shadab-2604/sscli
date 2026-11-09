@@ -47,6 +47,7 @@ app = typer.Typer(
 
 # Register modular subcommands
 app.add_typer(info_cmd, name="info")
+app.add_typer(info_cmd, name="system-info")
 app.add_typer(hardware_cmd, name="hardware")
 app.add_typer(processes_cmd, name="processes")
 app.add_typer(services_cmd, name="services")
@@ -78,6 +79,15 @@ def version_command() -> None:
     console.print(
         f"[bold cyan]{APP_NAME}[/bold cyan] version [bold white]{__version__}[/bold white]"
     )
+
+
+@app.command("dashboard", help="Launch the interactive terminal menu.")
+def dashboard_command() -> None:
+    """Launch the interactive terminal menu."""
+    from systemscan.cli.interactive import run_interactive_menu
+
+    run_interactive_menu()
+    raise typer.Exit(code=0)
 
 
 @app.command("checkupdate", help="Check remote repository for updates (alias for 'update check').")
@@ -155,10 +165,14 @@ def main_callback(
 
     # If no subcommand is passed or --interactive was requested:
     if ctx.invoked_subcommand is None:
-        if interactive or (sys.stdin.isatty() and not debug and not verbose):
-            # Run interactive menu mode
-            exit_code = run_interactive_menu()
-            raise typer.Exit(code=exit_code)
+        if interactive or (
+            sys.stdin.isatty() and sys.stdout.isatty() and not debug and not verbose
+        ):
+            # Launch the clean interactive terminal menu
+            from systemscan.cli.interactive import run_interactive_menu
+
+            run_interactive_menu()
+            raise typer.Exit(code=0)
         else:
             # Non-interactive without subcommand: show banner and help
             if not no_banner:

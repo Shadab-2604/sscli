@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-import winreg
+try:
+    import winreg
+except ImportError:
+    winreg = None  # type: ignore
 
 from systemscan.logging.logger import get_logger
 from systemscan.modules.models import ServiceInformation, StartupEntry
@@ -54,6 +57,8 @@ class WindowsSystemProvider:
     @staticmethod
     def get_startup_entries() -> list[StartupEntry]:
         """Inspect standard Windows Registry Run keys for startup persistence."""
+        if winreg is None:
+            return []
         entries: list[StartupEntry] = []
         keys = [
             (

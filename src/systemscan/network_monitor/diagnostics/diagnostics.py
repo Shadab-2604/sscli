@@ -29,7 +29,9 @@ class CaptureDiagnostics:
             try:
                 import ctypes
 
-                is_elevated = bool(ctypes.windll.shell32.IsUserAnAdmin())
+                windll = getattr(ctypes, "windll", None)
+                if windll:
+                    is_elevated = bool(windll.shell32.IsUserAnAdmin())
             except Exception:
                 pass
         else:

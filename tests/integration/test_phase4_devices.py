@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 from systemscan.cli import app
 from systemscan.devices.events import DeviceEventDispatcher
 from systemscan.devices.inventory import DeviceInventory
+from systemscan.devices.manager import DeviceManager
 from systemscan.devices.models import (
     BusType,
     DeviceCategory,
@@ -175,9 +176,12 @@ def test_cli_devices_commands() -> None:
     assert "device_id" in res_json.output
 
     # 3. info existing
-    res_info = runner.invoke(app, ["devices", "info", "disk-0"])
+    manager = DeviceManager()
+    devs = manager.discover_all()
+    target_id = devs[0].device_id if devs else "disk-0"
+    res_info = runner.invoke(app, ["devices", "info", target_id])
     assert res_info.exit_code == 0
-    assert "DEVICE INSPECTION" in res_info.output or "disk-0" in res_info.output
+    assert "DEVICE INSPECTION" in res_info.output or target_id in res_info.output
 
     # 4. info non-existing
     res_bad = runner.invoke(app, ["devices", "info", "non-existent-device-id-999"])

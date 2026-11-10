@@ -291,15 +291,15 @@ class StorageRepairEngine:
             try:
                 import ctypes
 
-                FILE_ATTRIBUTE_NORMAL = 0x80
-                for item in p.rglob("*"):
-                    try:
-                        if ctypes.windll.kernel32.SetFileAttributesW(
-                            str(item), FILE_ATTRIBUTE_NORMAL
-                        ):
-                            res["unhidden_count"] += 1
-                    except Exception:
-                        pass
+                windll = getattr(ctypes, "windll", None)
+                if windll:
+                    FILE_ATTRIBUTE_NORMAL = 0x80
+                    for item in p.rglob("*"):
+                        try:
+                            if windll.kernel32.SetFileAttributesW(str(item), FILE_ATTRIBUTE_NORMAL):
+                                res["unhidden_count"] += 1
+                        except Exception:
+                            pass
             except Exception as e:
                 logger.debug(f"Native attribute reset note: {e}")
         else:

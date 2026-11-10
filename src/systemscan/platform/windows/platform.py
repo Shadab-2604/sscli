@@ -6,8 +6,12 @@ import json
 import os
 import platform
 import subprocess
-import winreg
 from typing import Any
+
+try:
+    import winreg
+except ImportError:
+    winreg = None  # type: ignore
 
 from systemscan.logging.logger import get_logger
 from systemscan.modules.models import (
@@ -83,6 +87,9 @@ class WindowsPlatform(PlatformInterface):
     def get_firmware_info(self, include_serials: bool = False) -> FirmwareInformation:
         """Retrieve Motherboard, BIOS, and UEFI firmware from Windows Registry."""
         info = FirmwareInformation()
+
+        if winreg is None:
+            return info
 
         # 1. Read registry hardware description
         try:
@@ -208,6 +215,9 @@ class WindowsPlatform(PlatformInterface):
     def get_startup_entries(self) -> list[StartupEntry]:
         """Enumerate startup applications from Registry Run keys and Startup directories."""
         entries: list[StartupEntry] = []
+
+        if winreg is None:
+            return entries
 
         # 1. Registry Run Keys
         reg_targets = [

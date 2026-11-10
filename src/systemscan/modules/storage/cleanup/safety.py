@@ -84,16 +84,17 @@ class CleanupSafetyValidator:
         Evaluate a candidate file.
         Returns: (CleanupSafetyCategory, rationale)
         """
-        p = Path(file_path).resolve()
-        path_str = str(p)
-        path_lower = path_str.lower()
-
+        raw_p = Path(file_path)
         # 1. Symlink Safety: Symlinks are NEVER deleted directly to prevent target hijacking
-        if p.is_symlink():
+        if raw_p.is_symlink():
             return (
                 CleanupSafetyCategory.PROTECTED,
                 "Symbolic link rejected to prevent directory traversal",
             )
+
+        p = raw_p.resolve()
+        path_str = str(p)
+        path_lower = path_str.lower()
 
         # 2. Protected Extensions: User documents, databases, keys
         ext = p.suffix.lower()

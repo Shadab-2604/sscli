@@ -92,7 +92,7 @@ def test_external_tool_inspector() -> None:
     assert len(statuses) > 0
     tool_names = [s.name for s in statuses]
     assert "nmap" in tool_names
-    assert "powershell" in tool_names
+    assert "powershell" in tool_names or "pwsh" in tool_names
 
     # Test non-existent tool
     dummy = ExternalToolInspector.inspect_tool("totally_fake_tool_xyz_99")

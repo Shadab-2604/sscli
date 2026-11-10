@@ -117,6 +117,17 @@ else
     echo "Virtual environment not found at ${VENV_PATH} (skipping)."
 fi
 
+# Remove global launcher symlinks pointing to this repo
+for link in "${PREFIX:-}/bin/systemscan" "/usr/local/bin/systemscan" "$HOME/.local/bin/systemscan"; do
+    if [ -L "$link" ]; then
+        target="$(readlink "$link" 2>/dev/null || true)"
+        if [[ "$target" == *"$REPO_ROOT"* ]]; then
+            rm -f "$link" 2>/dev/null || true
+            echo "Removed global command link: $link"
+        fi
+    fi
+done
+
 # 2. Optionally purge user data
 if [ "$REMOVE_DATA" = true ]; then
     echo -e "\n${RED}Purging application configuration and data...${NC}"

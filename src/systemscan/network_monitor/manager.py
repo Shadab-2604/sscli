@@ -92,17 +92,16 @@ class NetworkThreatMonitorManager:
 
         self.event_bus.start()
 
+        def _on_packet(pkt: PacketMetadata) -> None:
+            self.event_bus.publish("packet.observed", pkt)
+
         # 1. Start Local Capture if requested
         if mode in (MonitorMode.LOCAL, MonitorMode.BOTH):
-            self.local_capture.start_capture(
-                callback=lambda pkt: self.event_bus.publish("packet.observed", pkt)
-            )
+            self.local_capture.start_capture(callback=_on_packet)
 
         # 2. Start Network-Wide Sensor Capture if requested
         if mode in (MonitorMode.NETWORK_WIDE, MonitorMode.BOTH):
-            self.network_capture.start_capture(
-                callback=lambda pkt: self.event_bus.publish("packet.observed", pkt)
-            )
+            self.network_capture.start_capture(callback=_on_packet)
 
         report = self.get_status_report()
 

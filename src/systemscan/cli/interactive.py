@@ -968,7 +968,7 @@ def action_check_updates() -> None:
         txn = coordinator.execute_update(
             channel=plan.channel,
             release=rel_info,
-            progress_callback=progress_cb,
+            progress_cb=progress_cb,
         )
         if txn.committed:
             console.print(

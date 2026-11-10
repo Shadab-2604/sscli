@@ -75,9 +75,9 @@ In accordance with our truthful compatibility standard, platforms are classified
 |---|---|---|---|---|
 | **Windows 11** | x86_64 / AMD64 | `WindowsPlatformProvider` | **TESTED** | Live host testbed. 252 tests passing, benchmarks, and interactive CLI verified. |
 | **Windows 10** | x86_64 / AMD64 | `WindowsPlatformProvider` | **PARTIALLY TESTED** | Shares Windows platform abstraction; unit-tested via mocks. |
+| **Kali Linux (2024.x / 2026.x / Rolling)** | x86_64 | `LinuxPlatformProvider` | **TESTED** | Live host testbed (Kali GNU/Linux Rolling). All 291 unit/integration tests passing, environment doctor healthy, and CLI verified. |
 | **Ubuntu (22.04 / 24.04 LTS)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Verified in automated GitHub Actions CI matrix runner. |
 | **Debian (11 / 12)** | x86_64 / arm64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Standard Debian Linux architecture; verified via unit test mocks. |
-| **Kali Linux (2023.x / 2024.x)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Debian derivative; verified against standard `/proc/net` and `psutil`. |
 | **Kali NetHunter (Android)** | aarch64 / armv7l | `LinuxPlatformProvider` | **SUPPORTED BY DESIGN** | NetHunter rootless/chroot/rooted Android environments. |
 | **Android (Termux)** | aarch64 / armv7l / x86_64 | `LinuxPlatformProvider` | **SUPPORTED BY DESIGN** | Termux userland environment with `$PREFIX` pathing and Android property queries. |
 | **Fedora Linux (38 / 39 / 40)** | x86_64 | `LinuxPlatformProvider` | **PARTIALLY TESTED** | Verified with systemd and procfs abstractions. |
@@ -129,16 +129,58 @@ pipx install .
 pipx ensurepath
 ```
 
-#### Option B: Automated User Installers
-- **Linux & macOS**:
-  ```bash
-  chmod +x scripts/install.sh
-  ./scripts/install.sh
-  ```
-- **Windows (PowerShell)**:
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Global
-  ```
+#### Option B: Automated Safe Installer (Linux / Kali Linux / macOS)
+```bash
+# 1. Install prerequisites (Kali / Debian / Ubuntu)
+sudo apt-get update && sudo apt-get install -y python3 python3-venv python3-pip git
+
+# 2. Clone repository
+git clone https://github.com/Shadab-2604/sscli.git
+cd sscli
+
+# 3. Run safe automated installer
+chmod +x scripts/install.sh
+./scripts/install.sh
+```
+The installer automatically:
+- Checks platform prerequisites (Python 3.10+).
+- Creates an isolated virtual environment (`.venv`) without contaminating global system packages.
+- Installs `systemscan` and creates an executable shim in `~/.local/bin/systemscan` or `/usr/local/bin/systemscan`.
+- Verifies the installation with `systemscan version`.
+
+> [!TIP]
+> Ensure `~/.local/bin` is in your `PATH`. On most modern Linux distributions (including Kali), this is enabled by default. If not, add `export PATH="$HOME/.local/bin:$PATH"` to your `~/.bashrc` or `~/.zshrc`.
+
+#### Option C: Manual Virtual Environment Setup (Developers / Linux)
+```bash
+# 1. Clone repository
+git clone https://github.com/Shadab-2604/sscli.git
+cd sscli
+
+# 2. Create isolated virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Upgrade pip and install package in editable mode with development tools
+pip install --upgrade pip
+pip install -e ".[dev]"
+
+# 4. (Optional) Install security utilities for enhanced auditing on Kali Linux
+sudo apt-get install -y nmap yara ufw
+
+# 5. Verify installation
+systemscan --version
+systemscan doctor
+```
+
+#### Option D: Windows (PowerShell)
+```powershell
+git clone https://github.com/Shadab-2604/sscli.git
+cd sscli
+powershell -ExecutionPolicy Bypass -File scripts\install.ps1 -Global
+```
+
+#### Option E: Android (Termux & Kali NetHunter)
 - **Android (Termux)**:
   ```bash
   pkg update && pkg install python python-pip git -y

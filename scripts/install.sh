@@ -147,15 +147,19 @@ if [ -f "$VENV_SYSTEMSCAN" ]; then
 
     # Automatically link to global PATH if possible
     GLOBAL_LINKED=false
+    chmod +x "$REPO_ROOT/scripts/systemscan" 2>/dev/null || true
     if [ -n "${PREFIX:-}" ] && [ -d "${PREFIX}/bin" ]; then
         ln -sf "$REPO_ROOT/scripts/systemscan" "${PREFIX}/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
         echo -e "Global command linked: ${GREEN}${PREFIX}/bin/systemscan${NC}"
     elif [ -d "/usr/local/bin" ] && [ -w "/usr/local/bin" ]; then
         ln -sf "$REPO_ROOT/scripts/systemscan" "/usr/local/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
         echo -e "Global command linked: ${GREEN}/usr/local/bin/systemscan${NC}"
-    elif [ -d "$HOME/.local/bin" ]; then
-        ln -sf "$REPO_ROOT/scripts/systemscan" "$HOME/.local/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
-        echo -e "Global command linked: ${GREEN}$HOME/.local/bin/systemscan${NC}"
+    else
+        mkdir -p "$HOME/.local/bin" 2>/dev/null || true
+        if [ -d "$HOME/.local/bin" ]; then
+            ln -sf "$REPO_ROOT/scripts/systemscan" "$HOME/.local/bin/systemscan" 2>/dev/null && GLOBAL_LINKED=true
+            echo -e "Global command linked: ${GREEN}$HOME/.local/bin/systemscan${NC}"
+        fi
     fi
 
     echo ""
